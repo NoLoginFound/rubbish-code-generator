@@ -42,9 +42,15 @@ function generateFunctionName(){
 		return generateMeaningfulFunctionName();
 	}
 }
+function randChar(){
+	return String.fromCharCode('a'.charCodeAt(0)+randInt(26));
+}
+function randString(length){
+	return Array(length).fill('').map(()=> randChar()).join('');
+}
 function generateParamName(){
 	if(Math.random()<0.05){
-		return String.fromCharCode('a'.charCodeAt(0)+randInt(26));
+		return randString(4);
 	}else{
 		const parts = [];
 		if(Math.random()<0.05){
@@ -106,13 +112,49 @@ function makeFunction(){
   functionMaxParamUsed.push(maxParamsUsed);
   return text;
 }
+function generateClassName(){
+	const nounExpr = generateParamName();
+	return nounExpr.substring(0,1).toUpperCase() + nounExpr.substring(1);
+}
 
-const expectedPages = 10;
+function makeClass(){
+	const name = generateClassName();
+	const fieldNames = Array(1+randInt(10)).fill('').map(() => generateParamName());
+	const fieldValues = fieldNames.map(()=> {
+		if(Math.random()< 0.1){
+			return Math.random();
+		}else if(Math.random() < 0.1){
+			return `'${randString(5)}'`;
+		}else if(Math.random() < 0.1){
+			return `new Date(${1000+randInt(1024)},${randInt(12)},${randInt(31)})`;
+		}else {
+			return randInt(1000);
+		}
+	});
+	const fieldsText = fieldNames.map( (v, i) => `  ${v} = ${fieldValues[i]};`).join('\n');
+	const constructorParams = fieldNames.join(', ');
+	const constructorBody = fieldNames.map( v => `    this.${v} = ${v}${Math.random()<0.5? ' ?? '+v:''};`).join('\n');
+	
+	let text = `class ${name}
+{
+${fieldsText}
+  constructor(${constructorParams})
+  {
+${constructorBody}
+  }
+   	
+}
+
+`;
+	return text;
+}
+
+const expectedPages = 14;
 const linesPerPage = 50;
-const linesPerFunction = 7;
+const linesPerFunction = 15;
 const numFunctions = Math.floor(expectedPages*linesPerPage/linesPerFunction);
 for(let i = 0; i < numFunctions; i++){
-  res+= makeFunction();
+  res+= Math.random() < 0.3 ? makeClass(): makeFunction();
 }
 
 console.log(res);
