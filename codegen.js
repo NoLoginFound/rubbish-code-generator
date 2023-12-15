@@ -148,8 +148,10 @@ ${constructorBody}
 `;
 	return text;
 }
-
-const expectedPages = 14;
+const args = process.argv;
+const pageArgIndex = args.indexOf('-p');
+const pageArg = pageArgIndex === -1 ? null : parseInt(args[pageArgIndex+1]);
+const expectedPages = pageArg ?? 14;
 const linesPerPage = 50;
 const linesPerFunction = 15;
 const numFunctions = Math.floor(expectedPages*linesPerPage/linesPerFunction);
