@@ -1,4 +1,6 @@
 const fs = require('fs')
+const {jsPDF} = require('jspdf');
+
 function loadSplitLines(name){
 	return fs.readFileSync(name, 'utf-8').split('\n').map(s => s.trim());
 }
@@ -159,4 +161,38 @@ for(let i = 0; i < numFunctions; i++){
   res+= Math.random() < 0.3 ? makeClass(): makeFunction();
 }
 
-console.log(res);
+//console.log(res);
+
+const writePDF = () => {
+	const constructFileName = () => {
+		const {firstName, lastName, suffix, outputDirectory} = JSON.parse(fs.readFileSync('private.json', 'utf-8'));
+		const now = new Date();
+		return `${outputDirectory}\\${firstName.toLowerCase()}_${lastName.toLowerCase()}.${now.toISOString().substring(0,10)}.${suffix}.pdf`;
+	}
+	const doc = new jsPDF();
+	const pageHeight = doc.internal.pageSize.height;
+	const pageWidth = doc.internal.pageSize.width;
+	const padding = 10;
+	const lineHeight = 7;
+	const startY = padding;
+	const startX = padding;
+	
+	let y = startY;
+	const writeLine = line => {
+		if ( y + padding > pageHeight){
+			y = startY;
+			doc.addPage();
+		}else{
+			y += lineHeight;
+		}
+		doc.text(startX, y, line); 
+	}
+	
+	const lines = doc.splitTextToSize(res, pageWidth - 20);
+	lines.forEach(writeLine);
+	doc.save(constructFileName());
+	
+}
+
+writePDF();
+
